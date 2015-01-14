@@ -25,15 +25,14 @@
         android:layout_weight="1"
         android:text="@string/play" />
 
-    <LinearLayout android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical" >
+    <LinearLayout android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
 
         <com.guomi.weikerecorder.entity.CustomView
             android:id="@+id/paint"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            Text="@string/hello_world" />
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 

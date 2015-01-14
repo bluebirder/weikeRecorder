@@ -3,20 +3,23 @@ package com.guomi.weikerecorder.activity;
 import java.io.File;
 import java.io.IOException;
 
+import android.annotation.SuppressLint;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.Button;
 
 import com.guomi.weikerecorder.R;
 import com.guomi.weikerecorder.entity.CustomView;
 import com.guomi.weikerecorder.util.MusicPlayer;
 
-public class MainActivity extends ActionBarActivity implements OnClickListener {
+public class MainActivity extends ActionBarActivity implements OnClickListener, OnTouchListener {
 
     private Button btnStart;
     private Button btnStop;
@@ -64,7 +67,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
         btnStart.setOnClickListener(this);
         btnStop.setOnClickListener(this);
         btnPlay.setOnClickListener(this);
-        //paint.setOnTouchListener();
+        paint.setOnTouchListener(this);
 
         recAudioFile = new File("/mnt/sdcard", "new.amr");
     }
@@ -85,6 +88,19 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
         default:
             break;
         }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        switch (v.getId()) {
+        case R.id.paint:
+            System.out.println("touch");
+            break;
+        default:
+            break;
+        }
+        return false;
     }
 
     private void startRecorder() {
