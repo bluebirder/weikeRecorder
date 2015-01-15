@@ -7,5 +7,8 @@
     <string name="start">开始</string>
     <string name="stop">结束</string>
     <string name="play">播放</string>
+    <string name="pencil">铅笔</string>
+    <string name="eraser">橡皮</string>
+    <string name="browser">板刷</string>
 
 </resources>

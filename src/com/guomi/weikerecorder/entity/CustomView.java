@@ -9,6 +9,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -70,5 +72,14 @@ public class CustomView extends View {
         invalidate();
 
         return true; //必须返回true
+    }
+
+    public void clearCanvas(Canvas canvas) {
+        mPaint = new Paint();
+        mPaint.setXfermode(new PorterDuffXfermode(Mode.CLEAR));
+        canvas.drawPaint(mPaint);
+        mPaint.setXfermode(new PorterDuffXfermode(Mode.SRC));
+
+        invalidate();
     }
 }
