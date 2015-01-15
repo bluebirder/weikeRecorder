@@ -19,11 +19,13 @@ import android.view.View;
  * @author Robin
  */
 public class CustomView extends View {
-    private int mLastX, mLastY; //上次触屏的位置
-    private int mCurrX, mCurrY; //当前触屏的位置
+    private int mLastX, mLastY; // 上次触屏的位置
+    private int mCurrX, mCurrY; // 当前触屏的位置
 
-    private Bitmap mBitmap; //保存每次绘画的结果
+    private Bitmap mBitmap; // 保存每次绘画的结果
+    private Canvas mCanvas;
     private Paint mPaint;
+    private boolean cut = false; // 是否断的
 
     public CustomView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -33,22 +35,19 @@ public class CustomView extends View {
 
     @SuppressLint("DrawAllocation")
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        int width = getWidth();
-        int height = getHeight();
+    protected void onDraw(Canvas cvs) {
+        super.onDraw(cvs);
 
         if (mBitmap == null) {
-            mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            mBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+            mCanvas = new Canvas(mBitmap);
         }
 
         //先将结果画到Bitmap上
-        Canvas tmpCanvas = new Canvas(mBitmap);
-        tmpCanvas.drawLine(mLastX, mLastY, mCurrX, mCurrY, mPaint);
+        mCanvas.drawLine(mLastX, mLastY, mCurrX, mCurrY, mPaint);
 
         //再把Bitmap画到canvas上
-        canvas.drawBitmap(mBitmap, 0, 0, mPaint);
+        cvs.drawBitmap(mBitmap, 0, 0, mPaint);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -64,6 +63,10 @@ public class CustomView extends View {
         case MotionEvent.ACTION_DOWN:
             mLastX = mCurrX;
             mLastY = mCurrY;
+            cut = false;
+            break;
+        case MotionEvent.ACTION_UP:
+            cut = true;
             break;
         default:
             break;
@@ -74,12 +77,29 @@ public class CustomView extends View {
         return true; //必须返回true
     }
 
-    public void clearCanvas(Canvas canvas) {
+    public void clearCanvas() {
         mPaint = new Paint();
         mPaint.setXfermode(new PorterDuffXfermode(Mode.CLEAR));
-        canvas.drawPaint(mPaint);
+        mCanvas.drawPaint(mPaint);
         mPaint.setXfermode(new PorterDuffXfermode(Mode.SRC));
 
         invalidate();
+    }
+
+    public void clearCanvas2() {
+        Bitmap mp = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        Paint pt = new Paint();
+
+        drawImg(mp, pt);
+    }
+
+    public void drawImg(Bitmap map, Paint pt) {
+        mCanvas.drawBitmap(map, 0, 0, pt);
+
+        invalidate();
+    }
+
+    public boolean isCut() {
+        return cut;
     }
 }
