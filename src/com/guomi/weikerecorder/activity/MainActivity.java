@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
@@ -14,6 +16,7 @@ import android.graphics.Paint;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +30,7 @@ import android.widget.ImageButton;
 import com.guomi.weikerecorder.R;
 import com.guomi.weikerecorder.entity.CustomView;
 import com.guomi.weikerecorder.util.MusicPlayer;
+import com.guomi.weikerecorder.util.PaintUtils;
 
 public class MainActivity extends ActionBarActivity implements OnClickListener, OnTouchListener {
 
@@ -47,9 +51,21 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
     private Character tools = 'p';
     private StringBuilder json = new StringBuilder();
     private long timestamp;
-    private long replayStamp;
 
     private OutputStream out;
+
+    private Timer timer;
+    final Handler handler = new Handler();
+
+    private Canvas mCanvas;
+    private Bitmap mBitmap;
+    private Paint mPaint;
+    private float sx;
+    private float sy;
+    private float ex;
+    private float ey;
+
+    private boolean isDrawing = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +94,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         return super.onOptionsItemSelected(item);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void setupViews() {
         btnStart = (Button) findViewById(R.id.start);
         btnStop = (Button) findViewById(R.id.stop);
@@ -87,6 +104,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         pencil = (ImageButton) findViewById(R.id.pencil);
         eraser = (ImageButton) findViewById(R.id.eraser);
         browser = (ImageButton) findViewById(R.id.browser);
+
+        refreshTools();
 
         btnStart.setOnClickListener(this);
         btnStop.setOnClickListener(this);
@@ -103,28 +122,45 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
     public void onClick(View v) {
         switch (v.getId()) {
         case R.id.start:
+            btnStart.getBackground().setAlpha(160);
+            btnPlay.getBackground().setAlpha(255);
+            if (isDrawing) {
+                // break; // 是否重新开始
+            }
+            isDrawing = true;
             timestamp = System.currentTimeMillis();
             //startAudioRecorder();
             startDrawRecorder();
             break;
         case R.id.stop:
+            if (!isDrawing) {
+                break;
+            }
+            btnStart.getBackground().setAlpha(255);
+            btnPlay.getBackground().setAlpha(255);
+            isDrawing = false;
             //stopAudioRecorder();
             stopDrawRecorder();
             break;
         case R.id.play:
-            replayStamp = System.currentTimeMillis();
+            btnStart.getBackground().setAlpha(255);
+            btnPlay.getBackground().setAlpha(160);
+            timer = new Timer();
             //mPlayer = new MusicPlayer(MainActivity.this);
             //mPlayer.playMicFile(recAudioFile);
             playDrawFile(recJsonFile);
             break;
         case R.id.pencil:
             tools = 'p';
+            refreshTools();
             break;
         case R.id.eraser:
             tools = 'e';
+            refreshTools();
             break;
         case R.id.browser:
             tools = 'b';
+            refreshTools();
             break;
         default:
             break;
@@ -181,6 +217,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
     }
 
     private void startDrawRecorder() {
+        paint.clearCanvas();
+
         File dir = new File(getWeikeRecordDir());
         if (!dir.exists()) {
             dir.mkdirs();
@@ -238,31 +276,39 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
             e.printStackTrace();
         }
 
-        Bitmap mBitmap = Bitmap.createBitmap(paint.getWidth(), paint.getHeight(), Bitmap.Config.ARGB_8888);
-        Paint mPaint = new Paint();
+        mBitmap = Bitmap.createBitmap(paint.getWidth(), paint.getHeight(), Bitmap.Config.ARGB_8888);
+        mPaint = new Paint();
         mPaint.setStrokeWidth(6);
         if ("".equals(sb.toString().trim())) {
             paint.drawImg(mBitmap, mPaint);
             return;
         }
 
-        Canvas tmpCanvas = new Canvas(mBitmap);
+        mCanvas = new Canvas(mBitmap);
         String[] segments = sb.toString().trim().split("#;#");
         for (String seg : segments) {
             String[] coords = seg.split(";");
             int last = coords.length - 1;
             for (int i = 0; i < last; i++) {
                 String[] p1 = coords[i].split(":");
-                String[] xy1 = p1[1].split(",");
+                final String[] xy1 = p1[1].split(",");
                 String[] p2 = coords[i + 1].split(":");
-                String[] xy2 = p2[1].split(",");
-                long times = replayStamp + Long.valueOf(xy1[2]);
-
-                tmpCanvas.drawLine(Float.valueOf(xy1[0]), Float.valueOf(xy1[1]), Float.valueOf(xy2[0]),
-                        Float.valueOf(xy2[1]), mPaint);
+                final String[] xy2 = p2[1].split(",");
+                sx = Float.valueOf(xy1[0]);
+                sy = Float.valueOf(xy1[1]);
+                ex = Float.valueOf(xy2[0]);
+                ey = Float.valueOf(xy2[1]);
+                // updateUI(sx, sy, ex, ey);
+                long times = Long.valueOf(xy1[2]);
+                final Runnable mUpdateResults = new UpdateRunnable(p1[0].charAt(0), sx, sy, ex, ey);
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        handler.post(mUpdateResults);
+                    }
+                }, times);
             }
         }
-        paint.drawImg(mBitmap, mPaint);
     }
 
     private String getWeikeRecordDir() {
@@ -271,5 +317,58 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         }
 
         return Environment.getDataDirectory().getAbsolutePath() + "/weikeRecord/";
+    }
+
+    private void updateUI(char tool, float x1, float y1, float x2, float y2) {
+        if (mCanvas == null || mPaint == null || mBitmap == null) {
+            return;
+        }
+
+        PaintUtils.changeTools(mPaint, tool);
+
+        mCanvas.drawLine(x1, y1, x2, y2, mPaint);
+        paint.drawImg(mBitmap, mPaint);
+    }
+
+    private class UpdateRunnable implements Runnable {
+        private char tool;
+        private float x1;
+        private float y1;
+        private float x2;
+        private float y2;
+
+        public UpdateRunnable(char tool, float x1, float y1, float x2, float y2) {
+            this.tool = tool;
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+        }
+
+        @Override
+        public void run() {
+            updateUI(tool, x1, y1, x2, y2);
+        }
+    }
+
+    private void refreshTools() {
+        switch (tools) {
+        case 'p':
+            pencil.getBackground().setAlpha(180);
+            eraser.getBackground().setAlpha(255);
+            browser.getBackground().setAlpha(255);
+            break;
+        case 'e':
+            pencil.getBackground().setAlpha(255);
+            eraser.getBackground().setAlpha(180);
+            browser.getBackground().setAlpha(255);
+            break;
+        case 'b':
+            pencil.getBackground().setAlpha(255);
+            eraser.getBackground().setAlpha(255);
+            browser.getBackground().setAlpha(180);
+            break;
+        }
+        paint.changeTools(tools);
     }
 }

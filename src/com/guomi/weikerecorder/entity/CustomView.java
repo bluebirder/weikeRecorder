@@ -8,12 +8,14 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff.Mode;
-import android.graphics.PorterDuffXfermode;
+import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.guomi.weikerecorder.util.PaintUtils;
 
 /**
  * @author Robin
@@ -30,7 +32,6 @@ public class CustomView extends View {
     public CustomView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mPaint = new Paint();
-        mPaint.setStrokeWidth(6);
     }
 
     @SuppressLint("DrawAllocation")
@@ -78,10 +79,7 @@ public class CustomView extends View {
     }
 
     public void clearCanvas() {
-        mPaint = new Paint();
-        mPaint.setXfermode(new PorterDuffXfermode(Mode.CLEAR));
-        mCanvas.drawPaint(mPaint);
-        mPaint.setXfermode(new PorterDuffXfermode(Mode.SRC));
+        mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
         invalidate();
     }
@@ -101,5 +99,9 @@ public class CustomView extends View {
 
     public boolean isCut() {
         return cut;
+    }
+
+    public void changeTools(Character tool) {
+        PaintUtils.changeTools(mPaint, tool);
     }
 }
