@@ -129,7 +129,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
             }
             isDrawing = true;
             timestamp = System.currentTimeMillis();
-            //startAudioRecorder();
+            startAudioRecorder();
             startDrawRecorder();
             break;
         case R.id.stop:
@@ -139,15 +139,14 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
             btnStart.getBackground().setAlpha(255);
             btnPlay.getBackground().setAlpha(255);
             isDrawing = false;
-            //stopAudioRecorder();
+            stopAudioRecorder();
             stopDrawRecorder();
             break;
         case R.id.play:
             btnStart.getBackground().setAlpha(255);
             btnPlay.getBackground().setAlpha(160);
             timer = new Timer();
-            //mPlayer = new MusicPlayer(MainActivity.this);
-            //mPlayer.playMicFile(recAudioFile);
+            playAudioFile(recAudioFile);
             playDrawFile(recJsonFile);
             break;
         case R.id.pencil:
@@ -256,9 +255,24 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         json = new StringBuilder();
     }
 
+    private void playAudioFile(File file) {
+        if (file == null) {
+            file = new File(getWeikeRecordDir(), "audio.amr");
+        }
+        if (!file.exists()) {
+            return;
+        }
+
+        mPlayer = new MusicPlayer(MainActivity.this);
+        mPlayer.playMicFile(file);
+    }
+
     private void playDrawFile(File file) {
         if (file == null) {
             file = new File(getWeikeRecordDir(), "draw.json");
+        }
+        if (!file.exists()) {
+            return;
         }
 
         StringBuilder sb = new StringBuilder();
