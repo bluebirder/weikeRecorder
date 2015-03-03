@@ -6,14 +6,19 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -26,17 +31,23 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.guomi.weikerecorder.R;
+import com.guomi.weikerecorder.entity.CallbackBundle;
 import com.guomi.weikerecorder.entity.CustomView;
+import com.guomi.weikerecorder.entity.OpenFileDialog;
 import com.guomi.weikerecorder.util.MusicPlayer;
 import com.guomi.weikerecorder.util.PaintUtils;
 
 public class MainActivity extends ActionBarActivity implements OnClickListener, OnTouchListener {
+    private static final int FILE_SELECT_CODE = 1;
+    private static int openfileDialogId = 0;
 
     private Button btnStart;
     private Button btnStop;
     private Button btnPlay;
+    private Button btnPreview;
 
     private CustomView paint;
 
@@ -99,6 +110,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         btnStart = (Button) findViewById(R.id.start);
         btnStop = (Button) findViewById(R.id.stop);
         btnPlay = (Button) findViewById(R.id.play);
+        btnPreview = (Button) findViewById(R.id.review);
         paint = (CustomView) findViewById(R.id.paint);
 
         pencil = (ImageButton) findViewById(R.id.pencil);
@@ -110,6 +122,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         btnStart.setOnClickListener(this);
         btnStop.setOnClickListener(this);
         btnPlay.setOnClickListener(this);
+        btnPreview.setOnClickListener(this);
 
         pencil.setOnClickListener(this);
         eraser.setOnClickListener(this);
@@ -148,6 +161,9 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
             timer = new Timer();
             playAudioFile(recAudioFile);
             playDrawFile(recJsonFile);
+            break;
+        case R.id.review:
+            showFileChooser();
             break;
         case R.id.pencil:
             tools = 'p';
@@ -189,21 +205,70 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         return false;
     }
 
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        if (id == openfileDialogId) {
+            Map<String, Integer> images = new HashMap<String, Integer>();
+            // 下面几句设置各文件类型的图标， 需要你先把图标添加到资源文件夹
+            images.put(OpenFileDialog.sRoot, R.drawable.filedialog_root); // 根目录图标
+            images.put(OpenFileDialog.sParent, R.drawable.filedialog_folder_up); //返回上一层的图标
+            images.put(OpenFileDialog.sFolder, R.drawable.filedialog_folder); //文件夹图标
+            images.put("ppt", R.drawable.filedialog_pptfile); //wav文件图标
+            images.put(OpenFileDialog.sEmpty, R.drawable.filedialog_root);
+            Dialog dialog = OpenFileDialog.createDialog(id, this, "打开文件", new CallbackBundle() {
+                @Override
+                public void callback(Bundle bundle) {
+                    String filepath = bundle.getString("path");
+                    setTitle(filepath); // 把文件路径显示在标题上
+                    // PPTUtils.doPPTtoImage(new File(filepath)); // 暂时无法实现
+                }
+            }, ".ppt;", images);
+            return dialog;
+        }
+        return null;
+    }
+
+    private void showFileChooser() {
+        showDialog(openfileDialogId);
+    }
+
+    private void showFileChooser(String dir) {
+        if (dir == null) {
+            dir = getWeikeRecordDir();
+        }
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Uri uri = Uri.fromFile(new File(dir));
+        intent.setDataAndType(uri, "application/msword");
+
+        try {
+            startActivityForResult(Intent.createChooser(intent, "请选择PPT文件"), FILE_SELECT_CODE);
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "Please install a File Manager.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void startAudioRecorder() {
         File dir = new File(getWeikeRecordDir());
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        recAudioFile = new File(dir, "audio.amr");
-        if (recAudioFile.exists()) {
-            recAudioFile.delete();
+        recAudioFile = new File(dir, "audio.3gp");
+        if (!recAudioFile.exists()) {
+            try {
+                recAudioFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         mMediaRecorder = new MediaRecorder();
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
-        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         mMediaRecorder.setOutputFile(recAudioFile.getAbsolutePath());
+
         try {
             mMediaRecorder.prepare();
         } catch (IllegalStateException e) {
@@ -325,7 +390,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         }
     }
 
-    private String getWeikeRecordDir() {
+    public static String getWeikeRecordDir() {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             return Environment.getExternalStorageDirectory().getAbsolutePath() + "/weikeRecord/";
         }

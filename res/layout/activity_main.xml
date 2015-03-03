@@ -11,24 +11,31 @@
 
         <Button
             android:id="@+id/start"
-            android:layout_width="150dp"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/start" />
 
         <Button
             android:id="@+id/stop"
-            android:layout_width="150dp"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/stop" />
 
         <Button
             android:id="@+id/play"
-            android:layout_width="150dp"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/play" />
+
+        <Button
+            android:id="@+id/review"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/review" />
     </LinearLayout>
 
     <LinearLayout
