@@ -2,12 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical">
+    android:orientation="vertical" >
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal" >
 
         <Button
             android:id="@+id/start"
@@ -39,21 +39,43 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal" >
 
-        <com.guomi.weikerecorder.entity.CustomView
-            android:id="@+id/paint"
+        <ImageButton
+            android:id="@+id/previous"
+            style="@style/PreviousButton"
             android:layout_width="wrap_content"
-            android:layout_height="361dp" />
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/previous" />
 
+        <TextView
+            android:id="@+id/pageNum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="1" />
+
+        <ImageButton
+            android:id="@+id/next"
+            style="@style/NextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/next" />
     </LinearLayout>
+
+    <com.guomi.weikerecorder.entity.CustomView
+        android:id="@+id/paint"
+        android:layout_width="wrap_content"
+        android:layout_height="284dp"
+        android:layout_weight="0.55" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal" >
 
         <ImageButton
             android:id="@+id/pencil"
@@ -72,7 +94,6 @@
             style="@style/BrowserButton"
             android:layout_width="40dp"
             android:contentDescription="@string/browser" />
-
     </LinearLayout>
 
 </LinearLayout>

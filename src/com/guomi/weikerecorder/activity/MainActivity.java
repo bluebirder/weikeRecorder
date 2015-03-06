@@ -31,6 +31,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.guomi.weikerecorder.R;
@@ -48,6 +49,9 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
     private Button btnStop;
     private Button btnPlay;
     private Button btnPreview;
+    private ImageButton previous; // 上一页
+    private ImageButton next; // 下一页
+    private TextView pageNum;
 
     private CustomView paint;
 
@@ -66,6 +70,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
     private OutputStream out;
 
     private Timer timer;
+    private int currentPage = 1;
+    private int maxPage = 1;
     final Handler handler = new Handler();
 
     private Canvas mCanvas;
@@ -112,10 +118,13 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         btnPlay = (Button) findViewById(R.id.play);
         btnPreview = (Button) findViewById(R.id.review);
         paint = (CustomView) findViewById(R.id.paint);
+        pageNum = (TextView) findViewById(R.id.pageNum);
 
         pencil = (ImageButton) findViewById(R.id.pencil);
         eraser = (ImageButton) findViewById(R.id.eraser);
         browser = (ImageButton) findViewById(R.id.browser);
+        previous = (ImageButton) findViewById(R.id.previous);
+        next = (ImageButton) findViewById(R.id.next);
 
         refreshTools();
 
@@ -123,6 +132,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         btnStop.setOnClickListener(this);
         btnPlay.setOnClickListener(this);
         btnPreview.setOnClickListener(this);
+        previous.setOnClickListener(this);
+        next.setOnClickListener(this);
 
         pencil.setOnClickListener(this);
         eraser.setOnClickListener(this);
@@ -165,6 +176,25 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         case R.id.review:
             showFileChooser();
             break;
+        case R.id.previous:
+            if (currentPage == 1) {
+                return;
+            }
+            currentPage--;
+            displayImg('l');
+            String dl = String.format(";l:%d", System.currentTimeMillis() - timestamp);
+            appendData(currentPage + 1, dl);
+            break;
+        case R.id.next:
+            currentPage++;
+            int tm = maxPage;
+            displayImg('r');
+            if (currentPage > tm) {
+                json.append("#p#");
+            }
+            String dr = String.format(";r:%d", System.currentTimeMillis() - timestamp);
+            appendData(currentPage - 1, dr);
+            break;
         case R.id.pencil:
             tools = 'p';
             refreshTools();
@@ -187,17 +217,40 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
     public boolean onTouch(View v, MotionEvent event) {
         switch (v.getId()) {
         case R.id.paint:
-            if (!"".equals(json.toString().trim())) {
+            String[] pages = json.toString().trim().split("#p#");
+            String current = "";
+            if (pages.length >= currentPage) {
+                current = pages[currentPage - 1];
+            }
+
+            if (!"".equals(current)) {
                 if (paint.isCut()) {
-                    json.append("#;#");
+                    current += "#;#";
                 } else {
-                    json.append(";");
+                    current += ";";
                 }
             }
             float x = event.getX();
             float y = event.getY();
             String coord = String.format("%c:%f,%f,%d", tools, x, y, System.currentTimeMillis() - timestamp);
-            json.append(coord);
+            current += coord;
+            json = new StringBuilder();
+            for (int i = 0; i < pages.length; i++) {
+                if (i > 0) {
+                    json.append("#p#");
+                }
+                if (i == currentPage - 1) {
+                    json.append(current);
+                } else {
+                    json.append(pages[i]);
+                }
+            }
+            if (currentPage > pages.length) {
+                for (int i = pages.length; i < currentPage; i++) {
+                    json.append("#p#");
+                }
+                json.append(current);
+            }
             break;
         default:
             break;
@@ -249,6 +302,28 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         }
     }
 
+    private void displayImg(char direction) {
+        pageNum.setText(String.valueOf(currentPage));
+        if (currentPage > maxPage) {
+            paint.clearCanvas();
+            maxPage = currentPage;
+            return;
+        }
+        int prv = currentPage;
+        if (direction == 'l') {
+            prv = prv + 1;
+        } else {
+            prv = prv - 1;
+        }
+        String[] pages = json.toString().split("#p#");
+        String display = "";
+        if (pages.length >= currentPage) {
+            display = pages[currentPage - 1];
+        }
+        paint.clearCanvas();
+        drawWithJson(false, display);
+    }
+
     private void startAudioRecorder() {
         File dir = new File(getWeikeRecordDir());
         if (!dir.exists()) {
@@ -282,6 +357,10 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
 
     private void startDrawRecorder() {
         paint.clearCanvas();
+        currentPage = 1;
+        maxPage = 1;
+        json = new StringBuilder();
+        pageNum.setText("1");
 
         File dir = new File(getWeikeRecordDir());
         if (!dir.exists()) {
@@ -355,39 +434,12 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
             e.printStackTrace();
         }
 
-        mBitmap = Bitmap.createBitmap(paint.getWidth(), paint.getHeight(), Bitmap.Config.ARGB_8888);
-        mPaint = new Paint();
-        mPaint.setStrokeWidth(6);
-        if ("".equals(sb.toString().trim())) {
-            paint.drawImg(mBitmap, mPaint);
-            return;
-        }
-
-        mCanvas = new Canvas(mBitmap);
-        String[] segments = sb.toString().trim().split("#;#");
-        for (String seg : segments) {
-            String[] coords = seg.split(";");
-            int last = coords.length - 1;
-            for (int i = 0; i < last; i++) {
-                String[] p1 = coords[i].split(":");
-                final String[] xy1 = p1[1].split(",");
-                String[] p2 = coords[i + 1].split(":");
-                final String[] xy2 = p2[1].split(",");
-                sx = Float.valueOf(xy1[0]);
-                sy = Float.valueOf(xy1[1]);
-                ex = Float.valueOf(xy2[0]);
-                ey = Float.valueOf(xy2[1]);
-                // updateUI(sx, sy, ex, ey);
-                long times = Long.valueOf(xy1[2]);
-                final Runnable mUpdateResults = new UpdateRunnable(p1[0].charAt(0), sx, sy, ex, ey);
-                timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        handler.post(mUpdateResults);
-                    }
-                }, times);
-            }
-        }
+        currentPage = 1;
+        maxPage = 1;
+        json = sb;
+        String firstPage = json.toString().trim().split("#p#")[0];
+        pageNum.setText("1");
+        drawWithJson(true, firstPage);
     }
 
     public static String getWeikeRecordDir() {
@@ -398,8 +450,92 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         return Environment.getDataDirectory().getAbsolutePath() + "/weikeRecord/";
     }
 
+    private void drawWithJson(boolean withTime, String json) {
+        mBitmap = Bitmap.createBitmap(paint.getWidth(), paint.getHeight(), Bitmap.Config.ARGB_8888);
+        mPaint = new Paint();
+        mPaint.setStrokeWidth(6);
+        if ("".equals(json)) {
+            paint.drawImg(mBitmap, mPaint);
+            return;
+        }
+
+        mCanvas = new Canvas(mBitmap);
+        String[] segments = json.split("#;#");
+        for (String seg : segments) {
+            String[] coords = seg.split(";");
+            int last = coords.length - 1;
+            for (int i = 0; i < last; i++) {
+                String[] p1 = coords[i].split(":");
+                char tool1 = p1[0].charAt(0);
+                if (tool1 == 'l' || tool1 == 'r') {
+                    if (!withTime) {
+                        continue;
+                    }
+                    long times = Long.valueOf(p1[1]);
+                    final Runnable mUpdateResults = new UpdateRunnable(tool1, sx, sy, ex, ey);
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            handler.post(mUpdateResults);
+                        }
+                    }, times);
+                    continue;
+                }
+                final String[] xy1 = p1[1].split(",");
+                String[] p2 = coords[i + 1].split(":");
+                char tool2 = p2[0].charAt(0);
+                if (tool2 == 'l' || tool2 == 'r') {
+                    if (!withTime) {
+                        continue;
+                    }
+                    long times = Long.valueOf(p2[1]);
+                    final Runnable mUpdateResults = new UpdateRunnable(tool2, sx, sy, ex, ey);
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            handler.post(mUpdateResults);
+                        }
+                    }, times);
+                    continue;
+                }
+                final String[] xy2 = p2[1].split(",");
+                sx = Float.valueOf(xy1[0]);
+                sy = Float.valueOf(xy1[1]);
+                ex = Float.valueOf(xy2[0]);
+                ey = Float.valueOf(xy2[1]);
+                if (withTime) {
+                    long times = Long.valueOf(xy1[2]);
+                    final Runnable mUpdateResults = new UpdateRunnable(tool1, sx, sy, ex, ey);
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            handler.post(mUpdateResults);
+                        }
+                    }, times);
+                } else {
+                    updateUI(tool1, sx, sy, ex, ey);
+                }
+            }
+        }
+    }
+
     private void updateUI(char tool, float x1, float y1, float x2, float y2) {
         if (mCanvas == null || mPaint == null || mBitmap == null) {
+            return;
+        }
+
+        if (tools == 'l') {
+            currentPage--;
+            pageNum.setText(String.valueOf(currentPage));
+            String[] data = json.toString().trim().split("#p#");
+            drawWithJson(true, data[currentPage - 1]);
+            return;
+        }
+        if (tools == 'r') {
+            currentPage++;
+            pageNum.setText(String.valueOf(currentPage));
+            String[] data = json.toString().trim().split("#p#");
+            drawWithJson(true, data[currentPage - 1]);
             return;
         }
 
@@ -450,4 +586,24 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         }
         paint.changeTools(tools);
     }
+
+    private void appendData(int page, String data) {
+        boolean appendPg = json.toString().endsWith("#p#");
+        String[] pages = json.toString().split("#p#");
+        if (page > pages.length) {
+            return;
+        }
+        pages[page - 1] = pages[page - 1] + data;
+        json = new StringBuilder();
+        for (int i = 0; i < pages.length; i++) {
+            if (i > 0) {
+                json.append("#p#");
+            }
+            json.append(pages[i]);
+        }
+        if (appendPg) {
+            json.append("#p#");
+        }
+    }
+
 }
