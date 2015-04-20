@@ -2,7 +2,7 @@
  * @(#)PPTUtils.java    Created on 2015年3月2日
  * Copyright (c) 2015 Guomi. All rights reserved.
  */
-package com.guomi.weikerecorder.util;
+package com.gm.weikerecorder.util;
 
 import java.io.File;
 

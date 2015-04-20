@@ -1,4 +1,4 @@
-package com.guomi.weikerecorder.activity;
+package com.gm.weikerecorder.activity;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,12 +33,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gm.weikerecorder.dialog.FileChooserDialogFragment;
+import com.gm.weikerecorder.entity.CustomView;
+import com.gm.weikerecorder.entity.OpenFileDialog;
+import com.gm.weikerecorder.util.MusicPlayer;
+import com.gm.weikerecorder.util.PaintUtils;
 import com.guomi.weikerecorder.R;
-import com.guomi.weikerecorder.dialog.FileChooserDialogFragment;
-import com.guomi.weikerecorder.entity.CustomView;
-import com.guomi.weikerecorder.entity.OpenFileDialog;
-import com.guomi.weikerecorder.util.MusicPlayer;
-import com.guomi.weikerecorder.util.PaintUtils;
 
 public class MainActivity extends ActionBarActivity implements OnClickListener, OnTouchListener {
     private static final int FILE_SELECT_CODE = 1;

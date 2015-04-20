@@ -2,7 +2,7 @@
  * @(#)FileUtils.java    Created on 2015年3月2日
  * Copyright (c) 2015 Guomi. All rights reserved.
  */
-package com.guomi.weikerecorder.util;
+package com.gm.weikerecorder.util;
 
 import android.content.Context;
 import android.database.Cursor;

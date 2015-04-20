@@ -2,7 +2,7 @@
  * @(#)MusicPlayer.java    Created on 2015年1月9日
  * Copyright (c) 2015 Guomi. All rights reserved.
  */
-package com.guomi.weikerecorder.util;
+package com.gm.weikerecorder.util;
 
 import java.io.File;
 

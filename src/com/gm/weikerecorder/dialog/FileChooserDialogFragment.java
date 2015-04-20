@@ -2,7 +2,7 @@
  * @(#)FileChooserDialogFragment.java    Created on 2015年3月13日
  * Copyright (c) 2015 Guomi. All rights reserved.
  */
-package com.guomi.weikerecorder.dialog;
+package com.gm.weikerecorder.dialog;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,10 +12,10 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 
+import com.gm.weikerecorder.entity.CallbackBundle;
+import com.gm.weikerecorder.entity.OpenFileDialog;
+import com.gm.weikerecorder.util.DialogIds;
 import com.guomi.weikerecorder.R;
-import com.guomi.weikerecorder.entity.CallbackBundle;
-import com.guomi.weikerecorder.entity.OpenFileDialog;
-import com.guomi.weikerecorder.util.DialogIds;
 
 /**
  * @author Robin

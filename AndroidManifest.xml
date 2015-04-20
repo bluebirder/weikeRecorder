@@ -19,7 +19,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.guomi.weikerecorder.activity.MainActivity"
+            android:name="com.gm.weikerecorder.activity.MainActivity"
             android:screenOrientation="landscape"
             android:label="@string/app_name" >
             <intent-filter>

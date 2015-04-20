@@ -2,7 +2,7 @@
  * @(#)CustomView.java    Created on 2015年1月9日
  * Copyright (c) 2015 Guomi. All rights reserved.
  */
-package com.guomi.weikerecorder.entity;
+package com.gm.weikerecorder.entity;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -15,7 +15,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.guomi.weikerecorder.util.PaintUtils;
+import com.gm.weikerecorder.util.PaintUtils;
 
 /**
  * @author Robin

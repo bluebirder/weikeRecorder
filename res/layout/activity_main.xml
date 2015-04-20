@@ -66,7 +66,7 @@
             android:contentDescription="@string/next" />
     </LinearLayout>
 
-    <com.guomi.weikerecorder.entity.CustomView
+    <com.gm.weikerecorder.entity.CustomView
         android:id="@+id/paint"
         android:layout_width="wrap_content"
         android:layout_height="284dp"

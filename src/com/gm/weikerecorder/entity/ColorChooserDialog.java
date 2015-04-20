@@ -2,7 +2,7 @@
  * @(#)ColorChooserDialog.java    Created on 2015年3月13日
  * Copyright (c) 2015 Guomi. All rights reserved.
  */
-package com.guomi.weikerecorder.entity;
+package com.gm.weikerecorder.entity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
