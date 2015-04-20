@@ -6,13 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -29,13 +27,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.guomi.weikerecorder.R;
-import com.guomi.weikerecorder.entity.CallbackBundle;
+import com.guomi.weikerecorder.dialog.FileChooserDialogFragment;
 import com.guomi.weikerecorder.entity.CustomView;
 import com.guomi.weikerecorder.entity.OpenFileDialog;
 import com.guomi.weikerecorder.util.MusicPlayer;
@@ -43,7 +42,6 @@ import com.guomi.weikerecorder.util.PaintUtils;
 
 public class MainActivity extends ActionBarActivity implements OnClickListener, OnTouchListener {
     private static final int FILE_SELECT_CODE = 1;
-    private static int openfileDialogId = 0;
 
     private Button btnStart;
     private Button btnStop;
@@ -87,6 +85,10 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // ---hides the title bar---
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         setContentView(R.layout.activity_main);
 
         setupViews();
@@ -258,33 +260,13 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
         return false;
     }
 
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        if (id == openfileDialogId) {
-            Map<String, Integer> images = new HashMap<String, Integer>();
-            // 下面几句设置各文件类型的图标， 需要你先把图标添加到资源文件夹
-            images.put(OpenFileDialog.sRoot, R.drawable.filedialog_root); // 根目录图标
-            images.put(OpenFileDialog.sParent, R.drawable.filedialog_folder_up); //返回上一层的图标
-            images.put(OpenFileDialog.sFolder, R.drawable.filedialog_folder); //文件夹图标
-            images.put("ppt", R.drawable.filedialog_pptfile); //wav文件图标
-            images.put(OpenFileDialog.sEmpty, R.drawable.filedialog_root);
-            Dialog dialog = OpenFileDialog.createDialog(id, this, "打开文件", new CallbackBundle() {
-                @Override
-                public void callback(Bundle bundle) {
-                    String filepath = bundle.getString("path");
-                    setTitle(filepath); // 把文件路径显示在标题上
-                    // PPTUtils.doPPTtoImage(new File(filepath)); // 暂时无法实现
-                }
-            }, ".ppt;", images);
-            return dialog;
-        }
-        return null;
-    }
-
     private void showFileChooser() {
-        showDialog(openfileDialogId);
+        FileChooserDialogFragment dialog = FileChooserDialogFragment.newInstance("打开文件");
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        dialog.show(ft, OpenFileDialog.tag);
     }
 
+    @SuppressWarnings("unused")
     private void showFileChooser(String dir) {
         if (dir == null) {
             dir = getWeikeRecordDir();

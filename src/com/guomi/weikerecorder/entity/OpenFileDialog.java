@@ -170,6 +170,7 @@ public class OpenFileDialog {
             return files.length;
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
             // 条目选择

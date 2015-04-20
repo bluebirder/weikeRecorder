@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="DefaultLocale">
+        <ignore path="src/com/guomi/weikerecorder/activity/MainActivity.java" />
+        <ignore path="src/com/guomi/weikerecorder/entity/ColorChooserDialog.java" />
+        <ignore path="src/com/guomi/weikerecorder/entity/OpenFileDialog.java" />
+        <ignore path="src/com/guomi/weikerecorder/util/PPTUtils.java" />
+    </issue>
+    <issue id="NewApi">
+        <ignore path="src/com/guomi/weikerecorder/activity/MainActivity.java" />
+        <ignore path="src/com/guomi/weikerecorder/dialog/ColorChooserDialogFragment.java" />
+        <ignore path="src/com/guomi/weikerecorder/dialog/FileChooserDialogFragment.java" />
+    </issue>
+</lint>
