@@ -10,4 +10,5 @@ package com.gm.weikerecorder.util;
 public abstract class DialogIds {
     public static int openfileDialogId = 0;
     public static int colorDialogId = 1;
+    public static int fontDialogId = 2;
 }

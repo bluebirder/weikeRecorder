@@ -15,6 +15,7 @@ public class PaintUtils {
     public static final int PENCIL_WIDTH = 3;
     public static final int ERASER_WIDTH = 6;
     public static final int BROWSER_WIDTH = 10;
+    public static final int FONT_SIZE = 12;
 
     public static void changeTools(Paint paint, Character tool) {
         switch (tool) {

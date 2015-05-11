@@ -28,11 +28,11 @@ import com.guomi.weikerecorder.R;
  */
 public class OpenFileDialog {
     public static String tag = "OpenFileDialog";
-    static final public String sRoot = "/";
-    static final public String sParent = "..";
-    static final public String sFolder = ".";
-    static final public String sEmpty = "";
-    static final private String sOnErrorMsg = "No rights to access!";
+    public static final String sRoot = "/";
+    public static final String sParent = "..";
+    public static final String sFolder = ".";
+    public static final String sEmpty = "";
+    private static final String sOnErrorMsg = "No rights to access!";
 
     // 参数说明
     // context:上下文

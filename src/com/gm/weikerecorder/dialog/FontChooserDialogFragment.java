@@ -1,5 +1,5 @@
 /*
- * @(#)ColorChooserDialogFragment.java    Created on 2015年3月23日
+ * @(#)FontChooserDialogFragment.java    Created on 2015年4月28日
  * Copyright (c) 2015 Guomi. All rights reserved.
  */
 package com.gm.weikerecorder.dialog;
@@ -10,18 +10,16 @@ import android.app.DialogFragment;
 import android.os.Bundle;
 
 import com.gm.weikerecorder.entity.CallbackBundle;
-import com.gm.weikerecorder.entity.ColorChooserDialog;
+import com.gm.weikerecorder.entity.FontChooserDialog;
 import com.gm.weikerecorder.util.DialogIds;
 
 /**
- * 颜色选择对话框
- * 
  * @author Robin
  */
-public class ColorChooserDialogFragment extends DialogFragment {
+public class FontChooserDialogFragment extends DialogFragment {
 
-    public static ColorChooserDialogFragment newInstance(String title) {
-        ColorChooserDialogFragment frag = new ColorChooserDialogFragment();
+    public static FontChooserDialogFragment newInstance(String title) {
+        FontChooserDialogFragment frag = new FontChooserDialogFragment();
         Bundle args = new Bundle();
         args.putString("title", title);
         frag.setArguments(args);
@@ -33,12 +31,11 @@ public class ColorChooserDialogFragment extends DialogFragment {
         String title = getArguments().getString("title");
         final Activity activity = getActivity();
 
-        Dialog dialog = ColorChooserDialog.createDialog(DialogIds.colorDialogId, activity, title, new CallbackBundle() {
+        Dialog dialog = FontChooserDialog.createDialog(DialogIds.fontDialogId, activity, title, new CallbackBundle() {
             @Override
             public void callback(Bundle bundle) {
             }
         });
-
         return dialog;
     }
 

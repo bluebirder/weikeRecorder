@@ -17,7 +17,7 @@ import android.util.Log;
  */
 public class MusicPlayer {
     private final static String TAG = "MusicPlayer";
-    private static MediaPlayer mMediaPlayer;
+    private static MediaPlayer mMediaPlayer = null;
     private Context mContext;
 
     public MusicPlayer(Context context) {
